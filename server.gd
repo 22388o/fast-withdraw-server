@@ -1,19 +1,31 @@
 extends Node
 
 const DEFAULT_PORT : int = 8382
-const DEFAULT_MAX_PEERS : int = 10
 
-const MAINCHAIN_RPC_PORT = 18443
-const TESTCHAIN_RPC_PORT = 18743
-const RPC_USER : String = "user"
-const RPC_PASS : String = "pass"
+# TODO upgrade to work with multiple peers & requests at once
+const DEFAULT_MAX_PEERS : int = 1
+
+# Regtest ports:
+#const MAINCHAIN_RPC_PORT = 18443
+#const TESTCHAIN_RPC_PORT = 18743
+
+const MAINCHAIN_RPC_PORT = 8332
+const TESTCHAIN_RPC_PORT = 8272
+
+const RPC_USER_DEFAULT : String = "user"
+const RPC_PASS_DEFAULT : String = "pass"
+
+var rpc_user : String = ""
+var rpc_pass : String = ""
 
 var peers = []
 var pending_requests = []
 
 var mainchain_balance : float = 0.0
 
-# TODO store with pending requests
+# TODO Instead of tracking the information for one request there should be
+# a queue of requests and their status tracked. Right now this can only
+# handle one request at a time. 
 var testchain_address : String = ""
 var testchain_payment_transaction : Dictionary
 var mainchain_payout_txid : String = ""
@@ -31,6 +43,28 @@ signal mainchain_sendtoaddress_txid_result
 
 func _ready() -> void:
 	print("Starting server")
+	
+	# Read rpcuser and password
+	var arguments : Dictionary = {}
+	for argument in OS.get_cmdline_user_args():
+		if argument.find("=") > -1:
+			var key_value = argument.split("=")
+			arguments[key_value[0].lstrip("--")] = key_value[1]
+		else:
+			# Options without an argument will be present in the dictionary,
+			# with the value set to an empty string.
+			arguments[argument.lstrip("--")] = ""
+			
+	if not arguments.has("rpcuser") or not arguments.has("rpcpassword"):
+		print(" -- --rpcuser=user --rpcpassword=password required!")
+		print("Will use default rpcuser=user and rpcpassword=password")
+		rpc_user = RPC_USER_DEFAULT
+		rpc_pass = RPC_PASS_DEFAULT
+	else:
+		rpc_user = arguments["rpcuser"]
+		rpc_pass = arguments["rpcpassword"]
+		
+	print("using rpc credential : ", rpc_user, ":", rpc_pass)
 	
 	$"/root/Net".fast_withdraw_requested.connect(_on_fast_withdraw_requested)
 	$"/root/Net".fast_withdraw_invoice_paid.connect(_on_fast_withdraw_invoice_paid)
@@ -135,7 +169,7 @@ func _on_fast_withdraw_invoice_paid(peer_id : int, txid : String, amount : float
 	
 	pending_requests.erase(invoice_paid)
 	
-	$"/root/Net".withdraw_complete.rpc_id(peer_id, mainchain_payout_txid, amount, "mupCLTxooxrc35Ufp9sKbks3FJPRBRSJvD")
+	$"/root/Net".withdraw_complete.rpc_id(peer_id, mainchain_payout_txid, amount, destination)
 	
 
 func rpc_mainchain_getbalance() -> void:
@@ -155,7 +189,7 @@ func rpc_mainchain_sendtoaddress(amount : float, address : String) -> void:
 
 
 func make_mainchain_rpc_request(method: String, params: Variant, http_request: HTTPRequest) -> void:
-	var auth = RPC_USER + ":" + RPC_PASS
+	var auth = rpc_user + ":" + rpc_pass
 	var auth_bytes = auth.to_utf8_buffer()
 	var auth_encoded = Marshalls.raw_to_base64(auth_bytes)
 	var headers: PackedStringArray = []
@@ -169,7 +203,7 @@ func make_mainchain_rpc_request(method: String, params: Variant, http_request: H
 
 
 func make_testchain_rpc_request(method: String, params: Variant, http_request: HTTPRequest) -> void:
-	var auth = RPC_USER + ":" + RPC_PASS
+	var auth = rpc_user + ":" + rpc_pass
 	var auth_bytes = auth.to_utf8_buffer()
 	var auth_encoded = Marshalls.raw_to_base64(auth_bytes)
 	var headers: PackedStringArray = []
