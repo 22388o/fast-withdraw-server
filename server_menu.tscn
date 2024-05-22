@@ -31,7 +31,15 @@ text = "Server Running"
 
 [node name="HTTPRequestGetBitAssetsAddress" type="HTTPRequest" parent="."]
 
-[node name="HTTPRequestBitAssetsTransaction" type="HTTPRequest" parent="."]
+[node name="HTTPRequestGetBitAssetsTransaction" type="HTTPRequest" parent="."]
+
+[node name="HTTPRequestGetBitNamesAddress" type="HTTPRequest" parent="."]
+
+[node name="HTTPRequestGetBitNamesTransaction" type="HTTPRequest" parent="."]
+
+[node name="HTTPRequestGetZSideAddress" type="HTTPRequest" parent="."]
+
+[node name="HTTPRequestGetZSideTransaction" type="HTTPRequest" parent="."]
 
 [connection signal="request_completed" from="HTTPRequestGetBalanceMainchain" to="." method="_on_http_request_get_balance_mainchain_request_completed"]
 [connection signal="request_completed" from="HTTPRequestSendToAddressMainchain" to="." method="_on_http_request_send_to_address_mainchain_request_completed"]
@@ -40,4 +48,8 @@ text = "Server Running"
 [connection signal="request_completed" from="HTTPRequestGetThunderAddress" to="." method="_on_http_request_get_thunder_address_request_completed"]
 [connection signal="request_completed" from="HTTPRequestGetThunderTransaction" to="." method="_on_http_request_get_thunder_transaction_request_completed"]
 [connection signal="request_completed" from="HTTPRequestGetBitAssetsAddress" to="." method="_on_http_request_get_bit_assets_address_request_completed"]
-[connection signal="request_completed" from="HTTPRequestBitAssetsTransaction" to="." method="_on_http_request_bit_assets_transaction_request_completed"]
+[connection signal="request_completed" from="HTTPRequestGetBitAssetsTransaction" to="." method="_on_http_request_get_bit_assets_transaction_request_completed"]
+[connection signal="request_completed" from="HTTPRequestGetBitNamesAddress" to="." method="_on_http_request_get_bit_names_address_request_completed"]
+[connection signal="request_completed" from="HTTPRequestGetBitNamesTransaction" to="." method="_on_http_request_get_bit_names_transaction_request_completed"]
+[connection signal="request_completed" from="HTTPRequestGetZSideAddress" to="." method="_on_http_request_get_z_side_address_request_completed"]
+[connection signal="request_completed" from="HTTPRequestGetZSideTransaction" to="." method="_on_http_request_get_z_side_transaction_request_completed"]

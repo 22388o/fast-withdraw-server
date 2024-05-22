@@ -14,6 +14,7 @@ const TESTCHAIN_RPC_PORT : int = 8272
 const BITASSETS_RPC_PORT : int = 19005
 const BITNAMES_RPC_PORT : int = 19020
 const THUNDER_RPC_PORT : int = 1910
+const ZSIDE_RPC_PORT : int = 1111111 # ????
 
 const RPC_USER_DEFAULT : String = "user"
 const RPC_PASS_DEFAULT : String = "password"
@@ -36,8 +37,12 @@ var testchain_address : String = ""
 var testchain_payment_transaction : Dictionary
 var bitassets_address : String = ""
 var bitassets_payment_transaction : Dictionary
+var bitnames_address : String = ""
+var bitnames_payment_transaction : Dictionary
 var thunder_address : String = ""
 var thunder_payment_transaction : Dictionary
+var zside_address : String = ""
+var zside_payment_transaction : Dictionary
 var mainchain_payout_txid : String = ""
 
 signal mainchain_balance_updated
@@ -46,18 +51,25 @@ signal generated_testchain_address
 signal received_testchain_transaction_result
 signal generated_bitassets_address
 signal received_bitassets_transaction_result
+signal generated_bitnames_address
+signal received_bitnames_transaction_result
 signal generated_thunder_address
 signal received_thunder_transaction_result
+signal generated_zside_address
+signal received_zside_transaction_result
 
 @onready var http_rpc_mainchain_getbalance: HTTPRequest = $HTTPRequestGetBalanceMainchain 
 @onready var http_rpc_mainchain_sendtoaddress: HTTPRequest = $HTTPRequestSendToAddressMainchain
 @onready var http_rpc_testchain_getnewaddress: HTTPRequest = $HTTPRequestGetTestchainAddress
 @onready var http_rpc_testchain_gettransaction: HTTPRequest = $HTTPRequestGetTestchainTransaction
 @onready var http_rpc_bitassets_getnewaddress: HTTPRequest = $HTTPRequestGetBitAssetsAddress
-@onready var http_rpc_bitassets_gettransaction: HTTPRequest = $HTTPRequestBitAssetsTransaction
+@onready var http_rpc_bitassets_gettransaction: HTTPRequest = $HTTPRequestGetBitAssetsTransaction
+@onready var http_rpc_bitnames_getnewaddress: HTTPRequest = $HTTPRequestGetBitNamesAddress
+@onready var http_rpc_bitnames_gettransaction: HTTPRequest = $HTTPRequestGetBitNamesTransaction
 @onready var http_rpc_thunder_getnewaddress: HTTPRequest = $HTTPRequestGetThunderAddress
 @onready var http_rpc_thunder_gettransaction: HTTPRequest = $HTTPRequestGetThunderTransaction
-
+@onready var http_rpc_zside_getnewaddress: HTTPRequest = $HTTPRequestGetZSideAddress
+@onready var http_rpc_zside_gettransaction: HTTPRequest = $HTTPRequestGetZSideTransaction
 
 func _ready() -> void:
 	print("Starting server")
@@ -65,7 +77,9 @@ func _ready() -> void:
 	chain_names = [
 		$"/root/Net".CHAIN_NAME_TESTCHAIN,
 		$"/root/Net".CHAIN_NAME_BITASSETS,
+		$"/root/Net".CHAIN_NAME_BITNAMES,
 		$"/root/Net".CHAIN_NAME_THUNDER,
+		$"/root/Net".CHAIN_NAME_ZSIDE,
 	]
 	
 	# Read rpcuser and password
@@ -156,8 +170,18 @@ func _on_fast_withdraw_requested(peer_id : int, chain_name : String, amount : fl
 		pending_requests.push_back([peer_id, bitassets_address, amount, destination])
 		print("Sending invoice to requesting peer")
 		$"/root/Net".receive_fast_withdraw_invoice.rpc_id(peer_id, amount, bitassets_address)
-
 		
+	elif chain_name == $"/root/Net".CHAIN_NAME_BITNAMES:
+		rpc_bitnames_getnewaddress()
+		await generated_bitnames_address
+		
+		print("New bitnames address generated for trade invoice: ", bitnames_address)
+	
+		# Create and store invoice, send instructions to client for completion
+		pending_requests.push_back([peer_id, bitnames_address, amount, destination])
+		print("Sending invoice to requesting peer")
+		$"/root/Net".receive_fast_withdraw_invoice.rpc_id(peer_id, amount, bitnames_address)
+
 	elif chain_name == $"/root/Net".CHAIN_NAME_THUNDER:
 		rpc_thunder_getnewaddress()
 		await generated_thunder_address
@@ -168,6 +192,17 @@ func _on_fast_withdraw_requested(peer_id : int, chain_name : String, amount : fl
 		pending_requests.push_back([peer_id, thunder_address, amount, destination])
 		print("Sending invoice to requesting peer")
 		$"/root/Net".receive_fast_withdraw_invoice.rpc_id(peer_id, amount, thunder_address)
+		
+	elif chain_name == $"/root/Net".CHAIN_NAME_ZSIDE:
+		rpc_zside_getnewaddress()
+		await generated_zside_address
+		
+		print("New zside address generated for trade invoice: ", zside_address)
+	
+		# Create and store invoice, send instructions to client for completion
+		pending_requests.push_back([peer_id, zside_address, amount, destination])
+		print("Sending invoice to requesting peer")
+		$"/root/Net".receive_fast_withdraw_invoice.rpc_id(peer_id, amount, zside_address)
 
 
 # TODO make this work asynchronously - remove await
@@ -289,7 +324,15 @@ func rpc_bitassets_getnewaddress() -> void:
 
 
 func rpc_bitassets_gettransaction(txid : String) -> void:
-	make_rpc_request(BITASSETS_RPC_PORT, "gettransaction", [txid], http_rpc_bitassets_gettransaction)
+	make_rpc_request(BITASSETS_RPC_PORT, "get_transaction", [txid], http_rpc_bitassets_gettransaction)
+
+
+func rpc_bitnames_getnewaddress() -> void:
+	make_rpc_request(BITNAMES_RPC_PORT, "get_new_address", [""], http_rpc_bitnames_getnewaddress)
+
+
+func rpc_bitnames_gettransaction(txid : String) -> void:
+	make_rpc_request(BITNAMES_RPC_PORT, "get_transaction", [txid], http_rpc_bitnames_gettransaction)
 
 
 func rpc_thunder_getnewaddress() -> void:
@@ -298,6 +341,14 @@ func rpc_thunder_getnewaddress() -> void:
 
 func rpc_thunder_gettransaction(txid : String) -> void:
 	make_rpc_request(THUNDER_RPC_PORT, "gettransaction", [txid], http_rpc_thunder_gettransaction)
+
+
+func rpc_zside_getnewaddress() -> void:
+	make_rpc_request(ZSIDE_RPC_PORT, "getnewaddress", [""], http_rpc_zside_getnewaddress)
+
+
+func rpc_zside_gettransaction(txid : String) -> void:
+	make_rpc_request(ZSIDE_RPC_PORT, "gettransaction", [txid], http_rpc_zside_gettransaction)
 
 
 func make_rpc_request(port : int, method: String, params: Variant, http_request: HTTPRequest) -> void:
@@ -399,7 +450,7 @@ func _on_http_request_get_bit_assets_address_request_completed(result: int, resp
 	generated_bitassets_address.emit()
 
 
-func _on_http_request_bit_assets_transaction_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+func _on_http_request_get_bit_assets_transaction_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
 	var res = get_result(response_code, body)
 	if res.has("result"):
 		print("Result: ", res.result)
@@ -409,6 +460,32 @@ func _on_http_request_bit_assets_transaction_request_completed(result: int, resp
 		bitassets_payment_transaction.clear()
 		
 	received_bitassets_transaction_result.emit()
+
+
+# BitNames RPC request results
+
+func _on_http_request_get_bit_names_address_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	var res = get_result(response_code, body)
+	if res.has("result"):
+		print("bitnames address Result: ", res.result)
+		bitnames_address = res.result
+	else:
+		print("bitnames address result error")
+		bitnames_address = ""
+		
+	generated_bitnames_address.emit()
+
+
+func _on_http_request_get_bit_names_transaction_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	var res = get_result(response_code, body)
+	if res.has("result"):
+		print("Result: ", res.result)
+		bitnames_payment_transaction = res.result
+	else:
+		print("result error")
+		bitnames_payment_transaction.clear()
+		
+	received_bitnames_transaction_result.emit()
 
 
 # Thunder RPC request results
@@ -436,3 +513,29 @@ func _on_http_request_get_thunder_transaction_request_completed(result: int, res
 		thunder_payment_transaction.clear()
 		
 	received_thunder_transaction_result.emit()
+
+
+# ZSide RPC request results
+
+func _on_http_request_get_z_side_address_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	var res = get_result(response_code, body)
+	if res.has("result"):
+		print("Result: ", res.result)
+		zside_address = res.result
+	else:
+		print("result error")
+		zside_address = ""
+		
+	generated_zside_address.emit()
+
+
+func _on_http_request_get_z_side_transaction_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	var res = get_result(response_code, body)
+	if res.has("result"):
+		print("Result: ", res.result)
+		zside_payment_transaction = res.result
+	else:
+		print("result error")
+		zside_payment_transaction.clear()
+		
+	received_zside_transaction_result.emit()

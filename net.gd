@@ -6,8 +6,10 @@ extends Node
 var print_debug_net : bool = true
 
 const CHAIN_NAME_TESTCHAIN = "Testchain"
-const CHAIN_NAME_BITASSETS= "BitAssets"
+const CHAIN_NAME_BITASSETS = "BitAssets"
+const CHAIN_NAME_BITNAMES = "BitNames"
 const CHAIN_NAME_THUNDER = "Thunder"
+const CHAIN_NAME_ZSIDE = "ZSide"
 
 # Server signals
 signal fast_withdraw_requested(peer : int, chain_name : String, amount: float, destination: String)
