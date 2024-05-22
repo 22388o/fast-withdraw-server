@@ -14,7 +14,7 @@ const TESTCHAIN_RPC_PORT : int = 8272
 const BITASSETS_RPC_PORT : int = 19005
 const BITNAMES_RPC_PORT : int = 19020
 const THUNDER_RPC_PORT : int = 1910
-const ZSIDE_RPC_PORT : int = 1111111 # ????
+const ZSIDE_RPC_PORT : int = 8232 
 
 const RPC_USER_DEFAULT : String = "user"
 const RPC_PASS_DEFAULT : String = "password"
