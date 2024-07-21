@@ -75,11 +75,8 @@ func _ready() -> void:
 	print("Starting server")
 	
 	chain_names = [
-		$"/root/Net".CHAIN_NAME_TESTCHAIN,
-		$"/root/Net".CHAIN_NAME_BITASSETS,
-		$"/root/Net".CHAIN_NAME_BITNAMES,
-		$"/root/Net".CHAIN_NAME_THUNDER,
-		$"/root/Net".CHAIN_NAME_ZSIDE,
+		$"/root/Net".FAST_WITHDRAW_CHAIN_TESTCHAIN,
+		$"/root/Net".FAST_WITHDRAW_CHAIN_THUNDER,
 	]
 	
 	# Read rpcuser and password
@@ -149,7 +146,7 @@ func _on_fast_withdraw_requested(peer_id : int, chain_name : String, amount : fl
 		return
 	
 	# Get a new sidechain address for specified sidechain
-	if chain_name == $"/root/Net".CHAIN_NAME_TESTCHAIN:
+	if chain_name == $"/root/Net".FAST_WITHDRAW_CHAIN_TESTCHAIN:
 		rpc_testchain_getnewaddress()
 		await generated_testchain_address
 		
@@ -160,29 +157,7 @@ func _on_fast_withdraw_requested(peer_id : int, chain_name : String, amount : fl
 		print("Sending invoice to requesting peer")
 		$"/root/Net".receive_fast_withdraw_invoice.rpc_id(peer_id, amount, testchain_address)
 	
-	elif chain_name == $"/root/Net".CHAIN_NAME_BITASSETS:
-		rpc_bitassets_getnewaddress()
-		await generated_bitassets_address
-		
-		print("New bitassets address generated for trade invoice: ", bitassets_address)
-	
-		# Create and store invoice, send instructions to client for completion
-		pending_requests.push_back([peer_id, bitassets_address, amount, destination])
-		print("Sending invoice to requesting peer")
-		$"/root/Net".receive_fast_withdraw_invoice.rpc_id(peer_id, amount, bitassets_address)
-		
-	elif chain_name == $"/root/Net".CHAIN_NAME_BITNAMES:
-		rpc_bitnames_getnewaddress()
-		await generated_bitnames_address
-		
-		print("New bitnames address generated for trade invoice: ", bitnames_address)
-	
-		# Create and store invoice, send instructions to client for completion
-		pending_requests.push_back([peer_id, bitnames_address, amount, destination])
-		print("Sending invoice to requesting peer")
-		$"/root/Net".receive_fast_withdraw_invoice.rpc_id(peer_id, amount, bitnames_address)
-
-	elif chain_name == $"/root/Net".CHAIN_NAME_THUNDER:
+	elif chain_name == $"/root/Net".FAST_WITHDRAW_CHAIN_THUNDER:
 		rpc_thunder_getnewaddress()
 		await generated_thunder_address
 		
@@ -193,7 +168,7 @@ func _on_fast_withdraw_requested(peer_id : int, chain_name : String, amount : fl
 		print("Sending invoice to requesting peer")
 		$"/root/Net".receive_fast_withdraw_invoice.rpc_id(peer_id, amount, thunder_address)
 		
-	elif chain_name == $"/root/Net".CHAIN_NAME_ZSIDE:
+	elif chain_name == $"/root/Net".FAST_WITHDRAW_CHAIN_ZSIDE:
 		rpc_zside_getnewaddress()
 		await generated_zside_address
 		

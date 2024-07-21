@@ -1,15 +1,11 @@
 extends Node
 
-# TODO rename from net to something more specific ex FastWithdrawNet
-
 # Enable this for debug printing in net.gd and fast_withdraw.gd
 var print_debug_net : bool = true
 
-const CHAIN_NAME_TESTCHAIN = "Testchain"
-const CHAIN_NAME_BITASSETS = "BitAssets"
-const CHAIN_NAME_BITNAMES = "BitNames"
-const CHAIN_NAME_THUNDER = "Thunder"
-const CHAIN_NAME_ZSIDE = "ZSide"
+const FAST_WITHDRAW_CHAIN_TESTCHAIN : String = "Testchain"
+const FAST_WITHDRAW_CHAIN_THUNDER : String = "Thunder"
+const FAST_WITHDRAW_CHAIN_ZSIDE : String = "ZSide"
 
 # Server signals
 signal fast_withdraw_requested(peer : int, chain_name : String, amount: float, destination: String)
@@ -19,9 +15,9 @@ signal fast_withdraw_invoice_paid(peer : int, chain_name : String, txid: String,
 signal fast_withdraw_invoice(amount: float, destination: String)
 signal fast_withdraw_complete(txid: String, amount: float, destination: String)
 
-# TODO add param: MC fee
+# TODO add params: MC fee 
 @rpc("any_peer", "call_remote", "reliable")
-func request_fast_withdraw(chain_name : String, amount : float, destination : String) -> void:
+func request_fast_withdraw(amount : float, chain_name: String, destination : String) -> void:
 	if print_debug_net:
 		print("Received fast withdrawal request")
 		print("Chain: ", chain_name)
